@@ -1,0 +1,1 @@
+example-project, /projects/example-project, npm run dev
