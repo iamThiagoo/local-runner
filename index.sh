@@ -16,49 +16,31 @@ main() {
   fi
 
   while true; do
-    echo -e "\n${GREEN}=== MENU ===${NC}"
-    echo "1. List projects"
+    print_logo
+    
+    echo "1. Start projects"
     echo "2. Add new project"
-    echo "3. Start projects"
-    echo "4. Exit"
+    echo "3. List projects"
+    echo "4. Edit projects file"
+    echo "5. Exit"
+
+    echo ""
     read -rp "Choose an option: " OPTION
 
     case $OPTION in
-      1) list_projects ;;
+      1) start_project ;;
       2) add_project ;;
-      3) start_project ;;
-      4) echo -e "${YELLOW}\nExiting...${NC}"; exit ;;
-      *) echo -e "${RED}Invalid option!${NC}" ;;
+      3) list_projects ;;
+      4) edit_projects_file ;;
+      5) echo -e "${YELLOW}\nExiting...${NC}"; exit ;;
+      *) echo -e "${RED}\nInvalid option!${NC}" ;;
     esac
   done
 }
 
-list_projects() {
-  echo -e "${GREEN}\nAvailable projects:${NC}"
-  if [ ! -s "$PROJECTS_FILE" ]; then
-    echo -e "${YELLOW}No projects registered.${NC}"
-    return
-  fi
-  awk -F',' '{print NR". "$1}' "$PROJECTS_FILE"
-}
-
-add_project() {
-  echo -e "${YELLOW}Adding a new project...${NC}"
-  read -rp "Project name: " NAME
-  read -rp "Project path: " PATH
-  read -rp "Startup command: " INIT_CMD
-
-  if [ -z "$NAME" ] || [ -z "$PATH" ] || [ -z "$INIT_CMD" ]; then
-    echo -e "${RED}Error: All fields are required!${NC}"
-    return
-  fi
-
-  echo -e "\n$NAME, $PATH, $INIT_CMD" >> "$PROJECTS_FILE"
-  echo -e "${GREEN}Project $NAME added successfully!${NC}"
-}
-
 start_project() {
-  echo -e "${GREEN}Available projects:${NC}"
+  print_logo
+  echo -e "${GREEN}\nAvailable projects: \n${NC}"
 
   if [ ! -s "$PROJECTS_FILE" ]; then
     echo -e "${YELLOW}No projects registered.${NC}"
@@ -66,6 +48,7 @@ start_project() {
   fi
 
   awk -F',' '{print NR". "$1}' "$PROJECTS_FILE"
+  echo ""
   read -rp "Choose a project to start: " choice
 
   if ! [[ "$choice" =~ ^[0-9]+$ ]]; then
@@ -104,6 +87,59 @@ start_project() {
     echo -e $ABS_PATH
     echo -e "${RED}Error: Directory $ABS_PATH does not exist.${NC}"
   fi
+}
+
+add_project() {
+  print_logo
+
+  echo -e "${YELLOW}Adding a new project...${NC}"
+  echo ""
+  read -rp "Project name: " NAME
+  read -rp "Project path: " PATH
+  read -rp "Startup command: " INIT_CMD
+
+  if [ -z "$NAME" ] || [ -z "$PATH" ] || [ -z "$INIT_CMD" ]; then
+    echo -e "${RED}\nError: All fields are required!${NC}"
+    return
+  fi
+
+  if [ -s "$PROJECTS_FILE" ]; then
+    printf "\n" >> "$PROJECTS_FILE"
+  fi
+
+  printf "%s, %s, %s" "$NAME" "$PATH" "$INIT_CMD" >> "$PROJECTS_FILE"
+
+  echo -e "${GREEN}\nProject $NAME added successfully!${NC}"
+  echo ""
+  read -n 1 -s -r -p "Press Enter to continue..."
+}
+
+list_projects() {
+  print_logo
+
+  echo -e "${GREEN}\nAvailable projects:\n${NC}"
+  if [ ! -s "$PROJECTS_FILE" ]; then
+    echo -e "${YELLOW}\nNo projects registered.${NC}"
+    return
+  fi
+  awk -F',' '{print NR". "$1}' "$PROJECTS_FILE"
+
+  echo ""
+  read -n 1 -s -r -p "Press Enter to continue..."
+}
+
+edit_projects_file() {
+  if [ ! -f "$PROJECTS_FILE" ]; then
+    echo -e "${RED}\nError: $PROJECTS_FILE file not found.${NC}"
+    return
+  fi
+
+  vi "$PROJECTS_FILE"
+}
+
+print_logo() {
+  clear
+  echo -e "\n$(cat "$(dirname "$0")/src/assets/logo.txt") \n"
 }
 
 main
