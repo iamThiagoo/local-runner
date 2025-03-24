@@ -5,7 +5,12 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-PROJECTS_FILE="$(dirname "$0")/src/projects.list.txt"
+SCRIPT_PATH="${BASH_SOURCE[0]}"
+SCRIPT_PATH="${SCRIPT_PATH//\\//}"
+PROJECTS_FILE="${SCRIPT_PATH%/*}/src/projects.list.txt"
+
+COMMAND_OPTION=$1
+PROJECT_OPTION=$2
 
 main() {
   if [ ! -f "$PROJECTS_FILE" ]; then
@@ -15,7 +20,14 @@ main() {
     exit 1
   fi
 
-  while true; do
+  if [ -n "$COMMAND_OPTION" ] && [ "$COMMAND_OPTION" = "start" ]; then
+    if [ -n "$PROJECT_OPTION" ]; then
+      start_project "$PROJECT_OPTION"
+      exit
+    else
+      OPTION=1
+    fi
+  else
     print_logo
     
     echo "1. Start projects"
@@ -23,19 +35,18 @@ main() {
     echo "3. List projects"
     echo "4. Edit projects file"
     echo "5. Exit"
-
     echo ""
     read -rp "Choose an option: " OPTION
+  fi
 
-    case $OPTION in
-      1) start_project ;;
-      2) add_project ;;
-      3) list_projects ;;
-      4) edit_projects_file ;;
-      5) echo -e "${YELLOW}\nExiting...${NC}"; exit ;;
-      *) echo -e "${RED}\nInvalid option!${NC}" ;;
-    esac
-  done
+  case $OPTION in
+    1) start_project && main ;;
+    2) add_project && main ;;
+    3) list_projects && main ;;
+    4) edit_projects_file && main ;;
+    5) echo -e "${YELLOW}\nExiting...${NC}"; exit ;;
+    *) echo -e "${RED}\nInvalid option!${NC}"; main ;;
+  esac
 }
 
 start_project() {
@@ -47,7 +58,13 @@ start_project() {
     return
   fi
 
-  awk -F',' '{print NR". "$1}' "$PROJECTS_FILE"
+  line_number=1
+  while IFS=',' read -r name _path _cmd || [ -n "$name" ]; do
+    name=${name//[$'\t\r\n']}
+    echo "$line_number. $name"
+    ((line_number++))
+  done < "$PROJECTS_FILE"
+  
   echo ""
   read -rp "Choose a project to start: " choice
 
@@ -84,7 +101,6 @@ start_project() {
     )
     echo -e "${GREEN}$NAME started successfully.${NC}"
   else
-    echo -e $ABS_PATH
     echo -e "${RED}Error: Directory $ABS_PATH does not exist.${NC}"
   fi
 }
@@ -122,7 +138,13 @@ list_projects() {
     echo -e "${YELLOW}\nNo projects registered.${NC}"
     return
   fi
-  awk -F',' '{print NR". "$1}' "$PROJECTS_FILE"
+
+  line_number=1
+  while IFS=',' read -r name _path _cmd || [ -n "$name" ]; do
+    name=${name//[$'\t\r\n']}
+    echo "$line_number. $name"
+    ((line_number++))
+  done < "$PROJECTS_FILE"
 
   echo ""
   read -n 1 -s -r -p "Press Enter to continue..."
@@ -138,8 +160,18 @@ edit_projects_file() {
 }
 
 print_logo() {
-  clear
-  echo -e "\n$(cat "$(dirname "$0")/src/assets/logo.txt") \n"
+  echo -e "\033[H\033[2J\033[3J"
+  
+  SCRIPT_PATH="${BASH_SOURCE[0]}"
+  SCRIPT_PATH="${SCRIPT_PATH//\\//}"
+  LOGO_FILE="${SCRIPT_PATH%/*}/src/assets/logo.txt"
+  
+  if [ -f "$LOGO_FILE" ]; then
+    while IFS= read -r line || [ -n "$line" ]; do
+      echo -e "$line"
+    done < "$LOGO_FILE"
+    echo ""
+  fi  
 }
 
 main
