@@ -30,3 +30,19 @@ Run the script:
 ```bash 
 $ ./index.sh
 ```
+
+## Configuration File
+
+The script uses a config file to store the projects information. The config file is located at `./src/projects.list.txt`.
+
+The format of each line is as follows:
+
+```bash
+<project_name>, <project_path>, <project_command>
+```
+
+You can modify this file or add new project with the script.
+
+## Contributing
+
+Contributions are welcome! If you find any issues or have suggestions for improvements, please open an issue or submit a pull request.
