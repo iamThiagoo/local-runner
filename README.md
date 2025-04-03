@@ -43,6 +43,29 @@ The format of each line is as follows:
 
 You can modify this file or add new project with the script.
 
+## Make a alias to run the script
+
+Give execution permission to the script:
+
+```bash
+$ chmod +x index.sh
+```
+
+To make the script runnable from anywhere in your terminal, you can create an simples alias.
+
+```bash
+$ echo 'alias runner="~/path/to/local-runner/index.sh"' >> ~/.bashrc
+$ source ~/.bashrc
+```
+
+Now you can run the script from anywhere using:
+
+```bash
+$ runner
+```
+
+Note: The alias will work for bash shells. If users are using a different shell (like zsh), they should add the alias to their respective shell configuration file (like `~/.zshrc`).
+
 ## Contributing
 
 Contributions are welcome! If you find any issues or have suggestions for improvements, please open an issue or submit a pull request.
